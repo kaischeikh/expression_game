@@ -5,7 +5,12 @@ import os
 import sys
 from textwrap import dedent
 
-from games.games.riddle_game import DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT, RiddleGame, OllamaNotAvailable
+from games.games.riddle_game import (
+    DEFAULT_MODEL,
+    DEFAULT_SYSTEM_PROMPT,
+    OllamaNotAvailable,
+    RiddleGame,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:

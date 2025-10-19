@@ -1,8 +1,10 @@
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Iterable
+
 import ollama
 from ollama import ResponseError
-from typing import Iterable
+
 
 @dataclass
 class HostGame(ABC):

@@ -1,9 +1,10 @@
-from games.games._host import HostGame, OllamaNotAvailable
 import os
 from dataclasses import dataclass, field
-from ollama import ResponseError
 
 import ollama
+from ollama import ResponseError
+
+from games.games._host import HostGame, OllamaNotAvailable
 
 DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
 DEFAULT_SYSTEM_PROMPT = """

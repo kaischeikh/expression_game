@@ -3,8 +3,7 @@ An interactive CLI that turns local Ollama models into a lightweight
 creative writing game.
 """
 
-from importlib.metadata import version, PackageNotFoundError
-
+from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("expression-game")
