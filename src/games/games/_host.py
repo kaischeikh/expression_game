@@ -21,21 +21,20 @@ class HostGame(ABC):
         for item in available.get("models", []):
             name = item.get("name")
             if name:
-                yield name 
-    
-    def build_messages(self, answer: str | None = None) -> list[dict[str, str]]:
-        messages = [
-            {"role": "system", "content": self.system_prompt}
-        ]
+                yield name
+
+    def build_messages(
+        self, answer: str | None = None
+    ) -> list[dict[str, str]]:
+        messages = [{"role": "system", "content": self.system_prompt}]
         if answer:
             messages.append({"role": "user", "content": answer})
-        
+
         return messages
 
     @abstractmethod
     def start_sentence(self) -> None:
-        raise NotImplementedError    
-
+        raise NotImplementedError
 
 
 class OllamaNotAvailable(RuntimeError):

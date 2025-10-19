@@ -31,7 +31,9 @@ class GameState:
             self.responses = []
 
 
-def _format_system_prompt(custom_prompt: str | None, rounds: int, difficulty: str) -> str:
+def _format_system_prompt(
+    custom_prompt: str | None, rounds: int, difficulty: str
+) -> str:
     if custom_prompt:
         return custom_prompt.strip()
     return DEFAULT_SYSTEM_PROMPT.format(rounds, difficulty).strip()
@@ -50,7 +52,9 @@ def _ensure_state() -> None:
         st.session_state.ui_state: dict[str, Any] = {"game_state": None}
 
 
-def start_new_game(model: str, rounds: int, difficulty: str, system_prompt: str) -> None:
+def start_new_game(
+    model: str, rounds: int, difficulty: str, system_prompt: str
+) -> None:
     game = RiddleGame(model=model, system_prompt=system_prompt)
     try:
         game.start_sentence()
@@ -129,9 +133,15 @@ def main() -> None:
 
     with st.sidebar.form("settings"):
         st.subheader("Game Settings")
-        model = st.selectbox("Model", options=available_models, index=default_index)
-        rounds = st.slider("Number of attempts", min_value=3, max_value=10, value=5)
-        difficulty = st.selectbox("Difficulty", options=["easy", "medium", "hard"], index=1)
+        model = st.selectbox(
+            "Model", options=available_models, index=default_index
+        )
+        rounds = st.slider(
+            "Number of attempts", min_value=3, max_value=10, value=5
+        )
+        difficulty = st.selectbox(
+            "Difficulty", options=["easy", "medium", "hard"], index=1
+        )
         custom_prompt = st.text_area(
             "Custom system prompt (optional)",
             placeholder="Leave empty to use the default host persona.",
@@ -139,13 +149,22 @@ def main() -> None:
         start = st.form_submit_button("Start new game")
 
     if start:
-        system_prompt = _format_system_prompt(custom_prompt, rounds, difficulty)
-        start_new_game(model=model, rounds=rounds, difficulty=difficulty, system_prompt=system_prompt)
+        system_prompt = _format_system_prompt(
+            custom_prompt, rounds, difficulty
+        )
+        start_new_game(
+            model=model,
+            rounds=rounds,
+            difficulty=difficulty,
+            system_prompt=system_prompt,
+        )
 
     state: GameState | None = st.session_state.ui_state.get("game_state")
 
     if not state:
-        st.info("Configure your settings in the sidebar and start the game to receive a riddle.")
+        st.info(
+            "Configure your settings in the sidebar and start the game to receive a riddle."
+        )
         return
 
     st.subheader("Riddle")
@@ -165,7 +184,9 @@ def main() -> None:
             request_additional_hint(state)
 
         with st.form("answer_form", clear_on_submit=True):
-            guess = st.text_input("Your guess", placeholder="Type your answer here...")
+            guess = st.text_input(
+                "Your guess", placeholder="Type your answer here..."
+            )
             submitted = st.form_submit_button("Submit guess")
 
         if submitted:
@@ -188,7 +209,9 @@ def main() -> None:
         st.markdown(state.answer)
 
     if state.round >= state.max_rounds and not state.answer_revealed:
-        st.warning("You've used all attempts. Reveal the answer or start a new game from the sidebar.")
+        st.warning(
+            "You've used all attempts. Reveal the answer or start a new game from the sidebar."
+        )
 
 
 if __name__ == "__main__":

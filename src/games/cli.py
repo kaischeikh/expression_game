@@ -97,7 +97,6 @@ def interactive_mode(game: RiddleGame, rounds: int) -> int:
             print(f"\n{creative_prompt}")
 
 
-
 def list_models(game: RiddleGame) -> int:
     try:
         models = list(game.list_models())
@@ -120,7 +119,8 @@ def main(argv: list[str] | None = None) -> int:
 
     game = RiddleGame(
         model=args.model,
-        system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT.format(args.rounds, args.difficulty),
+        system_prompt=args.system_prompt
+        or DEFAULT_SYSTEM_PROMPT.format(args.rounds, args.difficulty),
     )
 
     if args.list_models:
