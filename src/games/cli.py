@@ -74,10 +74,13 @@ def interactive_mode(game: RiddleGame, rounds: int) -> int:
             if answer.lower() in {"quit", "exit"}:
                 print("Thanks for playing!")
                 return 0
-            if answer == "ANSWER":
+            if answer.lower() == "answer":
                 print("Here's your answer")
                 final_answer = game.give_answer()
                 print(f"\n{final_answer}")
+                break
+            if answer.lower() == "continue":
+                print("We will continue playing.")
                 break
 
             try:
