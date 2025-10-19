@@ -1,0 +1,50 @@
+name: Ruff
+
+on:
+  push:
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+      - ".github/workflows/ruff.yml"
+  pull_request:
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ruff-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & format check (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+      
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      
+      - name: Sync lint dependencies
+        run: uv sync --locked --only-group lint
+
+      - name: Ruff version
+        run: uv run ruff --version
+
+      - name: Ruff check
+        run: uv run ruff check . --output-format=github
+
+      # Optional: enforce formatting
+      - name: Ruff format (check only)
+        run: uv run ruff format . --check

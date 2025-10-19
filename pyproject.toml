@@ -24,10 +24,12 @@ packages = ["src/games"]
 [tool.hatch.build.targets.sdist]
 include = ["src/games", "pyproject.toml", "README.md", "LICENSE"]
 
+[dependency-groups]
+lint = ["ruff>=0.14.1"]
+
 [tool.uv]
 dev-dependencies = [
-    "ipykernel",
-    "ruff>=0.14.1",
+    "ipykernel"
 ]
 
 [tool.ruff]

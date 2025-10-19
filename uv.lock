@@ -367,7 +367,6 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "ollama" },
-    { name = "ruff" },
     { name = "streamlit" },
 ]
 
@@ -375,16 +374,19 @@ dependencies = [
 dev = [
     { name = "ipykernel" },
 ]
+lint = [
+    { name = "ruff" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "ollama", specifier = ">=0.1.7" },
-    { name = "ruff", specifier = ">=0.14.1" },
     { name = "streamlit", specifier = ">=1.32.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ipykernel" }]
+lint = [{ name = "ruff", specifier = ">=0.14.1" }]
 
 [[package]]
 name = "gitdb"
