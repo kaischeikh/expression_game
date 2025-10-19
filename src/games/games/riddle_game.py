@@ -1,6 +1,6 @@
 from games.games._host import HostGame, OllamaNotAvailable
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from ollama import ResponseError
 
 import ollama
@@ -18,7 +18,7 @@ class RiddleGame(HostGame):
     model: str = DEFAULT_MODEL
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     enigma: str = ""
-    _messages = []
+    _messages = field(default_factory=list)
 
     def start_sentence(self) -> None:
         try:
@@ -69,8 +69,8 @@ class RiddleGame(HostGame):
     
     def give_answer(self) -> str:
         self._messages.append(
-            {"role": "user",
-            "assistant": "The player has decided to quit. Stope the game and Give the Answer and explain the riddle.",
+            {"role": "assistant",
+            "content": "The player has decided to quit. Stope the game and Give the Answer and explain the riddle.",
             }
         )
         try:
