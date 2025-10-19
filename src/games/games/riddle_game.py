@@ -18,7 +18,7 @@ class RiddleGame(HostGame):
     model: str = DEFAULT_MODEL
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     enigma: str = ""
-    _messages = field(default_factory=list)
+    _messages: list[dict[str, str]] = field(default_factory=list)
 
     def start_sentence(self) -> None:
         try:
@@ -31,10 +31,17 @@ class RiddleGame(HostGame):
             raise OllamaNotAvailable("Unexpected response from Ollama service.")
         
         self.enigma = enigma["content"].strip()
-        self._messages = [
-            {"role": "system", "content": self.system_prompt},
-            response.get("message")
-        ]
+        if self._messages == []:
+            self._messages = [
+                {"role": "system", "content": self.system_prompt},
+                response.get("message")
+            ]
+        else:
+            self._messages = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "assistant", "content": "This is not the first game of the player. No need for an intro."},
+                response.get("message"),
+            ]
     
     def hint(self):
         try:
@@ -69,8 +76,9 @@ class RiddleGame(HostGame):
     
     def give_answer(self) -> str:
         self._messages.append(
-            {"role": "assistant",
-            "content": "The player has decided to quit. Stope the game and Give the Answer and explain the riddle.",
+            {
+                "role": "user",
+                "content": "The player has decided to quit. Stop the game and give the answer, then explain the riddle.",
             }
         )
         try:
