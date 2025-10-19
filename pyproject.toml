@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "expression-game"
+name = "gameS"
 version = "0.1.0"
-description = "A playful CLI that turns your local Ollama models into a creative expression game."
+description = "A playful CLI that turns your local Ollama models into a creative games."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Kais Cheikh" }]
@@ -15,13 +15,13 @@ dependencies = [
 ]
 
 [project.scripts]
-expression-game = "expression_game.cli:main"
+riddle-game = "games.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/expression_game"]
+packages = ["src/games"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/expression_game", "pyproject.toml", "README.md", "LICENSE"]
+include = ["src/games", "pyproject.toml", "README.md", "LICENSE"]
 
 [tool.uv]
 dev-dependencies = [

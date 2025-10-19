@@ -5,7 +5,7 @@ import os
 import sys
 from textwrap import dedent
 
-from .game import DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT, ExpressionGame, OllamaNotAvailable
+from games.games.riddle_game import DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT, RiddleGame, OllamaNotAvailable
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -14,10 +14,16 @@ def build_parser() -> argparse.ArgumentParser:
         description="Play a creative expression game powered by your local Ollama models.",
     )
     parser.add_argument(
+        "--rounds",
+        default=5,
+        type=int,
+        help="Number of rounds.",
+    )
+    parser.add_argument(
         "--difficulty",
         default="medium",
         choices=["easy", "medium", "hard"],
-        help="List available Ollama models and exit.",
+        help="Difficulty of the games.",
     )
     parser.add_argument(
         "--model",
@@ -42,40 +48,49 @@ def print_banner() -> None:
     banner = dedent(
         """
         Expression Game
-        The Ollama model would give an enigma and you will have 5 turns to solve it.
+        The Ollama model would give an enigma and you will have N turns to solve it.
         Type 'quit' or press Ctrl+C to exit.
+        If you want to get the answer directly just type ANSWER.
         """
     ).strip()
     print(banner)
 
 
-def interactive_mode(game: ExpressionGame) -> int:
+def interactive_mode(game: RiddleGame, rounds: int) -> int:
     print_banner()
-    print(game.generate_enigma())
     while True:
-        try:
-            answer = input("\nAnswer> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nGoodbye!")
-            return 0
+        game.start_sentence()
+        hint = game.hint()
+        print(f"\n{hint}")
+        for round in range(rounds):
+            try:
+                answer = input("\nAnswer> ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\nGoodbye!")
+                return 0
 
-        if not answer:
-            continue
-        if answer.lower() in {"quit", "exit"}:
-            print("Thanks for playing!")
-            return 0
+            if not answer:
+                continue
+            if answer.lower() in {"quit", "exit"}:
+                print("Thanks for playing!")
+                return 0
+            if answer.lower() in {"ANSWER"}:
+                print("Here's your answer")
+                final_answer = game.give_answer()
+                print(f"\n{final_answer}")
+                break
 
-        try:
-            creative_prompt = game.validate_response(answer)
-        except OllamaNotAvailable as exc:
-            print(f"\nCould not reach Ollama: {exc}", file=sys.stderr)
-            return 2
+            try:
+                creative_prompt = game.validate_answer(answer)
+            except OllamaNotAvailable as exc:
+                print(f"\nCould not reach Ollama: {exc}", file=sys.stderr)
+                return 2
 
-        print(f"\n{creative_prompt}")
+            print(f"\n{creative_prompt}")
 
 
 
-def list_models(game: ExpressionGame) -> int:
+def list_models(game: RiddleGame) -> int:
     try:
         models = list(game.list_models())
     except OllamaNotAvailable as exc:
@@ -95,15 +110,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    game = ExpressionGame(
+    game = RiddleGame(
         model=args.model,
-        system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT.format(args.difficulty),
+        system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT.format(args.rounds, args.difficulty),
     )
 
     if args.list_models:
         return list_models(game)
 
-    return interactive_mode(game)
+    return interactive_mode(game, args.rounds)
 
 
 if __name__ == "__main__":
