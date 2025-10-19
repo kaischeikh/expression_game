@@ -31,7 +31,5 @@ dev-dependencies = [
 ]
 
 [tool.ruff]
-line-length = 100
+line-length = 79
 target-version = "py311"
-lint.select = ["E", "F", "I"]
-lint.ignore = ["E501"]
