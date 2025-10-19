@@ -1,6 +1,13 @@
 # syntax=docker/dockerfile:1.7-labs
-FROM python:3.11-slim
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim as base
 
+# Prevents Python from writing pyc files.
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Keeps Python from buffering stdout and stderr to avoid situations where
+# the application crashes without emitting any logs due to buffering.
+ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy \
     OLLAMA_HOST=http://host.docker.internal:11434
 
@@ -16,8 +23,11 @@ WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 
+# Install requirements
 RUN uv pip install --system --no-cache .
 
-EXPOSE 8501
+# Expose the port that the application listens on.
+EXPOSE 8000
 
-CMD ["streamlit", "run", "src/games/app/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true"]
+# Run the application.
+CMD streamlit run src/games/app/streamlit_app.py --server.headless=true --server.address=0.0.0.0 --server.port=8000
