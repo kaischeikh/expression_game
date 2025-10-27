@@ -1,15 +1,24 @@
 # Expression Game
 
-An interactive CLI riddle host that turns your locally running Ollama models
-into a playful guessing game. The app poses a riddle, offers hints, and lets you
-ask for the answer whenever you are ready.
+Expression Game is a collection of puzzle experiences powered by locally running
+Ollama models. Play the original riddle challenge from the terminal, or launch
+two Streamlit apps that bring the riddles and a trivia contest to the browser.
+
+## Apps
+
+- **Expression Game (Streamlit)** — the visual version of the riddle host,
+  offering hints, answer reveals, and configurable difficulty.
+- **Trivia Pursuit (Streamlit)** — test your knowledge across categories with
+  multi-choice questions, streak tracking, and per-round history.
+- **CLI Riddle Game** — a fast terminal workflow for riddles, perfect for
+  scripted runs or quick experiments.
 
 ## Features
 
-- Play short riddle sessions with configurable round count and difficulty.
-- Request hints or reveal the answer in-game by typing `ANSWER`.
 - Works with any Ollama chat model you have pulled locally.
-- Quickly inspect available models with the `--list-models` flag.
+- Adjustable rounds, difficulty, and model selection per game.
+- Browser-based interfaces for both riddles and trivia in addition to the CLI.
+- Docker Compose recipe to serve both web apps simultaneously.
 
 ## Prerequisites
 
@@ -19,14 +28,28 @@ ask for the answer whenever you are ready.
   management (optional but recommended).
 - Docker (optional) if you prefer containerised execution.
 
-## Run with uv
+## Local usage with uv
+
+Install dependencies once:
 
 ```bash
-# Install dependencies into an isolated UV environment
 uv pip install .
+```
 
-# Start the interactive riddle game
+Run the CLI riddle host:
+
+```bash
 uv run riddle-game --rounds 5 --difficulty medium
+```
+
+Launch the Streamlit apps locally:
+
+```bash
+# Expression Game UI
+uv run streamlit run src/games/app/streamlit_app.py
+
+# Trivia Pursuit UI
+uv run streamlit run src/games/app/streamlit_trivia.py
 ```
 
 ### CLI options
@@ -39,56 +62,80 @@ uv run riddle-game --rounds 5 --difficulty medium
 
 At any prompt you can type `ANSWER` to reveal the solution or `quit`/`exit` to leave the game.
 
-## Run directly with Python
+## Docker Compose workflow
 
-If you already have dependencies available, you can invoke the module entry point:
+To build the shared image and bring both web apps online:
 
 ```bash
-python -m games --difficulty hard --rounds 3
+docker compose up --build
 ```
 
-Set `OLLAMA_MODEL` to change the default model without passing `--model` every time.
+- `http://localhost:8000` → Expression Game Streamlit UI.
+- `http://localhost:8001` → Trivia Pursuit Streamlit UI.
 
-## Docker usage
+Both services use the same Docker image defined in `Dockerfile`, and each
+exports port `8000` internally—Compose publishes them on different host ports.
+
+## Individual Docker runs
+
+Build the image manually if you want to run containers without Compose:
 
 ```bash
-# Build the container image
 docker build -t expression-game .
+```
 
-# Run it against your host Ollama instance (override the command to pick the CLI)
+Run the CLI host:
+
+```bash
 docker run --rm -it \
   -e OLLAMA_HOST=http://host.docker.internal:11434 \
   expression-game \
   riddle-game --rounds 4 --difficulty easy
 ```
 
-You can forward any of the CLI flags used in the local workflow.
+Run a Streamlit app by overriding the container command:
+
+```bash
+# Expression Game UI
+docker run --rm -p 8000:8000 expression-game \
+  streamlit run src/games/app/streamlit_app.py --server.address=0.0.0.0 --server.port=8000
+
+# Trivia Pursuit UI
+docker run --rm -p 8001:8000 expression-game \
+  streamlit run src/games/app/streamlit_trivia.py --server.address=0.0.0.0 --server.port=8000
+```
 
 ## Project layout
 
 ```
 .
 ├── Dockerfile
+├── compose.yaml
 ├── pyproject.toml
 ├── src/
 │   └── games/
 │       ├── __init__.py
 │       ├── __main__.py
+│       ├── app/
+│       │   ├── streamlit_app.py
+│       │   └── streamlit_trivia.py
 │       ├── cli.py
-│       ├── game.py
 │       └── games/
 │           ├── __init__.py
 │           ├── _host.py
-│           └── riddle_game.py
-└── README.md
+│           ├── riddle_game.py
+│           └── trivia_game.py
+├── README.md
+└── README.Docker.md
 ```
 
-All Python code lives under `src/games`, and dependencies are declared in `pyproject.toml`
-so `uv` can manage installations and virtual environments cleanly.
+All Python code lives under `src/games`, and dependencies are declared in
+`pyproject.toml` so `uv` can manage installations and virtual environments
+cleanly.
 
 ## Troubleshooting
 
-- `Could not reach Ollama`: ensure the Ollama server is running and reachable via
+- `Could not reach Ollama`: Ensure the Ollama server is running and reachable via
   the configured `OLLAMA_HOST`.
-- No models listed: run `ollama pull <model-name>` locally, then retry `--list-models`.
+- No models listed: Run `ollama pull <model-name>` locally, then retry `--list-models`.
 - Dependency cache issues: `uv cache clear` will reset UV's cached wheels and indices.

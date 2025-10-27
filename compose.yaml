@@ -1,10 +1,25 @@
 services:
-  server:
+  expression_game:
     build:
       context: .
+    command: >
+      streamlit run src/games/app/streamlit_app.py
+      --server.headless=true
+      --server.address=0.0.0.0
+      --server.port=8000
     ports:
-      - 8000:8000
+      - "8000:8000"
 
+  trivia:
+    build:
+      context: .
+    command: >
+      streamlit run src/games/app/streamlit_trivia.py
+      --server.headless=true
+      --server.address=0.0.0.0
+      --server.port=8001
+    ports:
+      - "8001:8000"
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the
@@ -37,4 +52,3 @@ services:
 # secrets:
 #   db-password:
 #     file: db/password.txt
-

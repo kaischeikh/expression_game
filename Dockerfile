@@ -30,4 +30,4 @@ RUN uv pip install --system --no-cache .
 EXPOSE 8000
 
 # Run the application.
-CMD streamlit run src/games/app/streamlit_app.py --server.headless=true --server.address=0.0.0.0 --server.port=8000
+# CMD streamlit run src/games/app/streamlit_app.py --server.headless=true --server.address=0.0.0.0 --server.port=8000
