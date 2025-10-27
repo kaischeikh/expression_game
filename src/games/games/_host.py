@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import os
 from typing import Iterable
 
 import ollama
 from ollama import ResponseError
 
-
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
+class OllamaNotAvailable(RuntimeError):
+    """Raised when the Ollama API cannot be reached."""
 @dataclass
 class HostGame(ABC):
     model: str
@@ -36,6 +39,3 @@ class HostGame(ABC):
     def start_sentence(self) -> None:
         raise NotImplementedError
 
-
-class OllamaNotAvailable(RuntimeError):
-    """Raised when the Ollama API cannot be reached."""

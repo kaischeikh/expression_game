@@ -4,9 +4,8 @@ from dataclasses import dataclass, field
 import ollama
 from ollama import ResponseError
 
-from games.games._host import HostGame, OllamaNotAvailable
+from games.games._host import HostGame, OllamaNotAvailable, DEFAULT_MODEL
 
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
 DEFAULT_SYSTEM_PROMPT = """
     You are the playful host of a game about riddles.
     You will give a riddle and then give the user {} trials before giving the right answer.
