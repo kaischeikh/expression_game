@@ -6,7 +6,7 @@ from typing import Iterable
 import ollama
 from ollama import ResponseError
 
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:latest") #"llama3.1:latest")
 class OllamaNotAvailable(RuntimeError):
     """Raised when the Ollama API cannot be reached."""
 @dataclass

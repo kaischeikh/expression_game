@@ -19,6 +19,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /app
+RUN mkdir -p /app/data
 
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
@@ -28,6 +29,8 @@ RUN uv pip install --system --no-cache .
 
 # Expose the port that the application listens on.
 EXPOSE 8000
+
+VOLUME ["/app/data"]
 
 # Run the application.
 # CMD streamlit run src/games/app/streamlit_app.py --server.headless=true --server.address=0.0.0.0 --server.port=8000

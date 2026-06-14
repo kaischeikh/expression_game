@@ -106,7 +106,7 @@ def _render_header(session: TriviaSession | None) -> None:
         """
         <style>
         [data-testid="stAppViewContainer"] {
-            background: radial-gradient(circle at top, #f7fbff, #eef3ff 45%, #e7ebff 100%);
+            background: radial-gradient(circle at top, #d7e0ff 0%, #b8c6ff 45%, #9fb1ff 100%);
         }
         .score-card {
             border-radius: 16px;

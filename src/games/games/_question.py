@@ -1,19 +1,17 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Iterable, Mapping
+import os
+import sqlite3
+from pathlib import Path
+from typing import Any, Iterable, Literal, Mapping
 
 import numpy as np
-from ollama import ResponseError
-from typing import Literal
 import ollama
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    ValidationError,
-    field_validator,
-    model_validator
-)
+from ollama import ResponseError
+from pydantic import (BaseModel, ConfigDict, ValidationError, field_validator,
+                      model_validator)
+from tqdm.auto import tqdm
 
 from games.games._host import DEFAULT_MODEL, OllamaNotAvailable
 from games.utils.error import GameError, InvalidQuestionFormat
@@ -40,6 +38,7 @@ class Question(BaseModel):
     answer: str
     explanation: str | None = None
     difficulty: str = "medium"
+    asked: bool = False
 
     model_config = ConfigDict(
         frozen=True,
@@ -232,9 +231,14 @@ class QuestionGenerator:
         *,
         categories: Iterable[str] | None = None,
         difficulties: Iterable[str] | None = None,
+        show_progress: bool = False,
+        retry_on_invalid: bool = False,
+        max_attempts: int = 5,
     ) -> list[Question]:
         if count < 1:
             raise ValueError("count must be at least 1.")
+        if retry_on_invalid and max_attempts < 1:
+            raise ValueError("max_attempts must be at least 1.")
         if categories is None:
             categories = CATEGORIES
         if difficulties is None:
@@ -242,12 +246,102 @@ class QuestionGenerator:
         random_categories = np.random.choice(categories, count)
         random_difficulties = np.random.choice(difficulties, count)
         questions: list[Question] = []
-        for category, difficulty in zip(random_categories, random_difficulties):
-            question = self.generate_question(
-                category=category, difficulty=difficulty
-            )
+        pairs = zip(random_categories, random_difficulties)
+        if show_progress:
+            pairs = tqdm(pairs, total=count, desc="Generating questions: ")
+        for category, difficulty in pairs:
+            if retry_on_invalid:
+                attempts = 0
+                while True:
+                    attempts += 1
+                    try:
+                        question = self.generate_question(
+                            category=category, difficulty=difficulty
+                        )
+                        break
+                    except (GameError, InvalidQuestionFormat):
+                        if attempts >= max_attempts:
+                            raise
+            else:
+                question = self.generate_question(
+                    category=category, difficulty=difficulty
+                )
             questions.append(question)
         return questions
+
+    def export_questions_to_db(
+        self,
+        questions: Iterable[Question],
+        *,
+        db_path: str | None = None,
+    ) -> int:
+        db_path = _resolve_db_path(db_path)
+        _ensure_db_parent_dir(db_path)
+        rows = [
+            (
+                question.category,
+                question.question,
+                json.dumps(list(question.options)),
+                question.answer,
+                question.explanation,
+                question.difficulty,
+                int(question.asked),
+            )
+            for question in questions
+        ]
+        if not rows:
+            return 0
+        connection = sqlite3.connect(db_path)
+        try:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS questions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    category TEXT NOT NULL,
+                    question TEXT NOT NULL,
+                    options TEXT NOT NULL,
+                    answer TEXT NOT NULL,
+                    explanation TEXT,
+                    difficulty TEXT NOT NULL,
+                    asked INTEGER NOT NULL DEFAULT 0
+                )
+                """
+            )
+            connection.executemany(
+                """
+                INSERT INTO questions (
+                    category,
+                    question,
+                    options,
+                    answer,
+                    explanation,
+                    difficulty,
+                    asked
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                rows,
+            )
+            connection.commit()
+        finally:
+            connection.close()
+        return len(rows)
+
+
+def _resolve_db_path(db_path: str | None) -> str:
+    if db_path is None:
+        db_path = os.getenv("QUESTIONS_DB_PATH", "data/questions.db")
+    path = Path(db_path).expanduser()
+    if not path.is_absolute():
+        path = (Path.cwd() / path).resolve()
+    return path.as_posix()
+
+
+def _ensure_db_parent_dir(db_path: str) -> None:
+    path = Path(db_path)
+    parent = path.parent
+    if parent and not parent.exists():
+        parent.mkdir(parents=True, exist_ok=True)
 
 
 

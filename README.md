@@ -3,6 +3,7 @@
 Expression Game is a collection of puzzle experiences powered by locally running
 Ollama models. Play the original riddle challenge from the terminal, or launch
 two Streamlit apps that bring the riddles and a trivia contest to the browser.
+Trivia questions can be persisted to a shared SQLite question bank.
 
 ## Apps
 
@@ -18,6 +19,7 @@ two Streamlit apps that bring the riddles and a trivia contest to the browser.
 - Works with any Ollama chat model you have pulled locally.
 - Adjustable rounds, difficulty, and model selection per game.
 - Browser-based interfaces for both riddles and trivia in addition to the CLI.
+- SQLite-backed question bank with asked/unasked tracking.
 - Docker Compose recipe to serve both web apps simultaneously.
 
 ## Prerequisites
@@ -76,6 +78,21 @@ docker compose up --build
 Both services use the same Docker image defined in `Dockerfile`, and each
 exports port `8000` internally—Compose publishes them on different host ports.
 
+### Question bank storage
+
+The trivia game can read and write questions to a SQLite file. The following
+environment variables control the location:
+
+- `QUESTIONS_DB_PATH`: Full path to the SQLite file inside the container.
+- `QUESTIONS_DB_VOLUME`: Volume source (named volume by default, or a local path
+  like `./data` for bind-mounting).
+
+To run the question bank generator script in Docker:
+
+```bash
+docker compose run --rm question_bank_generator
+```
+
 ## Individual Docker runs
 
 Build the image manually if you want to run containers without Compose:
@@ -112,6 +129,8 @@ docker run --rm -p 8001:8000 expression-game \
 ├── Dockerfile
 ├── compose.yaml
 ├── pyproject.toml
+├── scripts/
+│   └── question_bank_generator.py
 ├── src/
 │   └── games/
 │       ├── __init__.py

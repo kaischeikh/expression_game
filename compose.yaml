@@ -20,6 +20,36 @@ services:
       --server.port=8001
     ports:
       - "8001:8000"
+    environment:
+      - QUESTIONS_DB_PATH=${QUESTIONS_DB_PATH:-/app/data/questions.db}
+    volumes:
+      - ${QUESTIONS_DB_VOLUME:-questions-db}:/app/data
+    depends_on:
+      question_bank_generator:
+        condition: service_completed_successfully
+
+  question_bank_generator:
+    build:
+      context: .
+    command: >
+      python scripts/question_bank_generator.py
+    environment:
+      - QUESTIONS_DB_PATH=${QUESTIONS_DB_PATH:-/app/data/questions.db}
+      - MINIMAL_NUMBER_OF_QUESTIONS=${MINIMAL_NUMBER_OF_QUESTIONS:-0}
+    volumes:
+      - ${QUESTIONS_DB_VOLUME:-questions-db}:/app/data
+  # trivia-generator:
+  #   build:
+  #     context: .
+  #   command: >
+  #     run src/games/generator/generate.py
+  #   environment:
+  #     - QUESTIONS_DB_PATH=${QUESTIONS_DB_PATH:-/app/data/questions.db}
+  #   volumes:
+  #     - ${QUESTIONS_DB_VOLUME:-questions-db}:/app/data
+
+volumes:
+  questions-db:
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the
